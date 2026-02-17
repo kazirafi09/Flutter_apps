@@ -14,15 +14,6 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Anime News App',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-        seedColor: Colors.deepPurple,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.deepPurple,
-          foregroundColor: Colors.white,
-        ),
-      ),
       home: const MyHomePage(),
     );
   }
