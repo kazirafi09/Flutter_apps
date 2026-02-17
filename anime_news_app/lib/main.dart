@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:anime_news_app/homepage.dart';
 
 void main() {
   runApp(const MyApp());
@@ -23,28 +24,6 @@ class MyApp extends StatelessWidget {
         ),
       ),
       home: const MyHomePage(),
-    );
-  }
-}
-
-/// Home Screen
-class MyHomePage extends StatelessWidget {
-  const MyHomePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
-
-    return Scaffold(
-      appBar: PreferredSize(
-        preferredSize: Size.fromHeight(screenHeight * 0.18),
-        child: AppBar(
-          title: Text('Anime News App'),
-        ),
-      ),
-      body: const Center(
-        child: Text('Welcome to Anime News App'),
-      ),
     );
   }
 }
