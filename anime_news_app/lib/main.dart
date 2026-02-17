@@ -43,33 +43,7 @@ class MyHomePage extends StatelessWidget {
         ),
       ),
       body: const Center(
-        child: SaysHelloWorld(),
-      ),
-    );
-  }
-}
-
-/// Reusable Widget
-class SaysHelloWorld extends StatelessWidget {
-  const SaysHelloWorld({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 200,
-      height: 200,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Colors.blueAccent,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: const Text(
-        'Hello World!',
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: 28,
-          fontWeight: FontWeight.bold,
-        ),
+        child: Text('Welcome to Anime News App'),
       ),
     );
   }
