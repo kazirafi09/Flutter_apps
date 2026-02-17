@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int myIndex = 0;
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
@@ -41,7 +47,6 @@ class MyHomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Text("This is where the search bar will go", style: TextStyle(fontSize: 16, color: Colors.black54)), // Placeholder for search bar
               ],
             ),
           ),
@@ -96,6 +101,26 @@ class MyHomePage extends StatelessWidget {
             ],
           ),
         ],
+      ),
+
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: (index) {
+          setState(() {
+            myIndex = index;
+          });
+        } , // Placeholder for navigation logic
+        currentIndex: myIndex,
+        items: [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home), 
+            label: "Home"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.search), 
+            label: "Search"),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person), 
+            label: "Profile"),
+        ]
       ),
     );
   }
