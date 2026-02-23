@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
-import 'screens/chat_screen.dart';
+import 'screens/auth_gate.dart';
 
 Future<void> main() async{
   WidgetsFlutterBinding.ensureInitialized();
@@ -31,7 +31,7 @@ class QuranChatApp extends StatelessWidget {
         ),
         fontFamily: 'Roboto',
       ),
-      home: const ChatScreen(),
+      home: const AuthGate(),
     );
   }
 }
