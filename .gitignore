@@ -1,0 +1,42 @@
+# Environment
+.env
+*.env
+gsk_*.txt
+
+# Flutter generated
+.flutter-plugins
+.flutter-plugins-dependencies
+**/Generated.xcconfig
+**/GeneratedPluginRegistrant.*
+
+
+# Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+
+# Android
+**/android/.gradle/
+**/android/local.properties
+**/android/**/GeneratedPluginRegistrant.java
+
+# iOS
+**/ios/Flutter/ephemeral/
+**/ios/Flutter/flutter_export_environment.sh
+
+# macOS
+**/macos/Flutter/ephemeral/
+
+# Windows
+**/windows/flutter/ephemeral/
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
