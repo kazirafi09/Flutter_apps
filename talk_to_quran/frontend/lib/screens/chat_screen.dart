@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/auth_service.dart'; // Ensure this path is correct
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
@@ -23,7 +24,10 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _isLoading = false;
   bool _showScrollToBottomBtn = false;
 
+  // Use your local IP for physical devices or 10.0.2.2 for Android Emulator
   final String _apiUrl = 'http://192.168.0.107:8000/chat';
+
+  final AuthService _auth = AuthService();
 
   final Map<String, String> _systemPrompt = {
     "role": "system",
@@ -35,10 +39,12 @@ class _ChatScreenState extends State<ChatScreen> {
   void initState() {
     super.initState();
     _scrollController.addListener(() {
-      if (_scrollController.offset > 200 && !_showScrollToBottomBtn) {
-        setState(() => _showScrollToBottomBtn = true);
-      } else if (_scrollController.offset <= 200 && _showScrollToBottomBtn) {
-        setState(() => _showScrollToBottomBtn = false);
+      if (_scrollController.hasClients) {
+        if (_scrollController.offset > 200 && !_showScrollToBottomBtn) {
+          setState(() => _showScrollToBottomBtn = true);
+        } else if (_scrollController.offset <= 200 && _showScrollToBottomBtn) {
+          setState(() => _showScrollToBottomBtn = false);
+        }
       }
     });
   }
@@ -51,16 +57,20 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _scrollToBottom() {
-    _scrollController.animateTo(
-      0.0,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
+  // Typewriter effect logic
   Future<void> _animateBotResponse(String fullText) async {
     String currentText = "";
 
+    if (!mounted) return;
     setState(() {
       _messages.insert(0, ChatMessage(text: "", isUser: false));
     });
@@ -68,7 +78,11 @@ class _ChatScreenState extends State<ChatScreen> {
     final words = fullText.split(" ");
 
     for (int i = 0; i < words.length; i++) {
-      await Future.delayed(const Duration(milliseconds: 40));
+      await Future.delayed(const Duration(milliseconds: 30));
+      
+      // ✅ CRITICAL: Check if user exited the screen during the "typing"
+      if (!mounted) return; 
+
       currentText += "${words[i]} ";
       setState(() {
         _messages[0] = ChatMessage(text: currentText, isUser: false);
@@ -93,6 +107,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
     List<Map<String, String>> historyForApi = [_systemPrompt];
 
+    // Build history from oldest to newest
     for (var msg in _messages.reversed.skip(1)) {
       historyForApi.add({
         "role": msg.isUser ? "user" : "assistant",
@@ -110,6 +125,9 @@ class _ChatScreenState extends State<ChatScreen> {
         }),
       );
 
+      // ✅ CRITICAL: Check if user is still here after the network call
+      if (!mounted) return;
+
       setState(() => _isLoading = false);
 
       if (response.statusCode == 200) {
@@ -120,17 +138,20 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages.insert(
               0,
               ChatMessage(
-                  text: "Server Error (${response.statusCode}). Check backend logs.",
+                  text: "Server Error (${response.statusCode}). Please try again.",
                   isUser: false));
         });
       }
     } catch (e) {
-      setState(() => _isLoading = false);
+      // ✅ CRITICAL: Check if user is still here after the error
+      if (!mounted) return;
+      
       setState(() {
+        _isLoading = false;
         _messages.insert(
             0,
             ChatMessage(
-                text: "Network Error. Make sure backend is running and IP is correct.",
+                text: "Network Error. Please check your connection.",
                 isUser: false));
       });
     }
@@ -150,7 +171,7 @@ class _ChatScreenState extends State<ChatScreen> {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                Colors.black.withValues(alpha: 0.8), // Updated
+                Colors.black.withValues(alpha: 0.8),
                 Colors.transparent,
               ],
             ),
@@ -171,6 +192,14 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ],
         ),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.logout_rounded, color: Colors.white.withValues(alpha: 0.7)),
+            onPressed: () async {
+              await _auth.signOut();
+            },
+          ),
+        ],
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -195,7 +224,7 @@ class _ChatScreenState extends State<ChatScreen> {
                         : ListView.builder(
                             controller: _scrollController,
                             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 20.0),
-                            reverse: true,
+                            reverse: true, // Messages appear from bottom
                             itemCount: _messages.length,
                             itemBuilder: (context, index) {
                               return _buildChatBubble(_messages[index]);
@@ -212,7 +241,6 @@ class _ChatScreenState extends State<ChatScreen> {
                           mini: true,
                           backgroundColor: const Color(0xFF132A20),
                           foregroundColor: const Color(0xFFD4AF37),
-                          elevation: 4,
                           onPressed: _scrollToBottom,
                           child: const Icon(Icons.keyboard_arrow_down_rounded, size: 28),
                         ),
@@ -230,19 +258,20 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
+  // UI Helper widgets stay the same...
   Widget _buildEmptyState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.mosque_rounded, size: 80, color: Colors.white.withValues(alpha: 0.2)), // Updated
+          Icon(Icons.mosque_rounded, size: 80, color: Colors.white.withValues(alpha: 0.2)),
           const SizedBox(height: 16),
           Text(
             "Peace be upon you",
             style: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withValues(alpha: 0.7), // Updated
+              color: Colors.white.withValues(alpha: 0.7),
             ),
           ),
           const SizedBox(height: 8),
@@ -250,7 +279,7 @@ class _ChatScreenState extends State<ChatScreen> {
             "Ask me any question about the Quran.",
             style: TextStyle(
               fontSize: 16,
-              color: Colors.white.withValues(alpha: 0.5), // Updated
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -275,13 +304,6 @@ class _ChatScreenState extends State<ChatScreen> {
             bottomLeft: Radius.circular(message.isUser ? 20 : 0),
             bottomRight: Radius.circular(message.isUser ? 0 : 20),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.2), // Updated
-              blurRadius: 5,
-              offset: const Offset(0, 3),
-            )
-          ],
         ),
         child: Text(
           message.text,
@@ -316,16 +338,10 @@ class _ChatScreenState extends State<ChatScreen> {
             SizedBox(
               width: 15,
               height: 15,
-              child: CircularProgressIndicator(
-                strokeWidth: 2,
-                color: Color(0xFFD4AF37),
-              ),
+              child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFFD4AF37)),
             ),
             SizedBox(width: 12),
-            Text(
-              "Reflecting...",
-              style: TextStyle(color: Colors.white70, fontSize: 14),
-            )
+            Text("Reflecting...", style: TextStyle(color: Colors.white70, fontSize: 14))
           ],
         ),
       ),
@@ -336,8 +352,8 @@ class _ChatScreenState extends State<ChatScreen> {
     return Container(
       padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.2), // Updated
-        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))), // Updated
+        color: Colors.black.withValues(alpha: 0.2),
+        border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
@@ -346,17 +362,14 @@ class _ChatScreenState extends State<ChatScreen> {
             child: TextField(
               controller: _controller,
               style: const TextStyle(color: Colors.white),
-              textCapitalization: TextCapitalization.sentences,
               enabled: !_isLoading,
-              minLines: 1,
               maxLines: 3,
-              keyboardType: TextInputType.multiline,
+              minLines: 1,
               decoration: InputDecoration(
                 hintText: 'Ask about the Quran...',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)), // Updated
+                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
                 filled: true,
-                fillColor: Colors.white.withValues(alpha: 0.05), // Updated
-                contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+                fillColor: Colors.white.withValues(alpha: 0.05),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(24.0),
                   borderSide: BorderSide.none,
@@ -365,30 +378,15 @@ class _ChatScreenState extends State<ChatScreen> {
             ),
           ),
           const SizedBox(width: 12),
-          GestureDetector(
-            onTap: _isLoading ? null : _sendMessage,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              margin: const EdgeInsets.only(bottom: 2),
-              padding: const EdgeInsets.all(14),
+          IconButton(
+            onPressed: _isLoading ? null : _sendMessage,
+            icon: Container(
+              padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: _isLoading ? Colors.grey[700] : const Color(0xFFD4AF37),
+                color: _isLoading ? Colors.grey : const Color(0xFFD4AF37),
                 shape: BoxShape.circle,
-                boxShadow: _isLoading
-                    ? []
-                    : [
-                        BoxShadow(
-                          color: const Color(0xFFD4AF37).withValues(alpha: 0.4), // Updated
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        )
-                      ],
               ),
-              child: const Icon(
-                Icons.send_rounded,
-                color: Colors.black87,
-                size: 24,
-              ),
+              child: const Icon(Icons.send_rounded, color: Colors.black87),
             ),
           ),
         ],

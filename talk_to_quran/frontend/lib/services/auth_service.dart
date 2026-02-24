@@ -1,9 +1,15 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
-class AuthService{
+class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  
+
+  // Added this method to check current auth status
+  Future<bool> isLoggedIn() async {
+    final user = _auth.currentUser;
+    return user != null;
+  }
+
   Future<UserCredential> signInwithEmailAndPassword(String email, String password) async {
     try {
       return await _auth.signInWithEmailAndPassword(email: email, password: password);
@@ -33,4 +39,3 @@ class AuthService{
 
   Stream<User?> get userStream => _auth.authStateChanges();
 }
-
