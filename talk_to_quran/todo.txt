@@ -1,0 +1,46 @@
+=========================================
+QURAN AI - INTERVIEW DAY PREP CHECKLIST
+=========================================
+
+--- 1. LAPTOP POWER SETTINGS ---
+[ ] Plug laptop into the charger (Critical).
+[ ] Go to Power Settings: Set "Sleep" to NEVER.
+    (If the laptop sleeps, the server dies).
+
+--- 2. BACKEND SERVER (THE BRAIN) ---
+[ ] Open your Python IDE (PyCharm/VSCode).
+[ ] Ensure '.env' has your GROQ_API_KEY.
+[ ] Ensure 'quran_en.json' is in the folder.
+[ ] RUN 'python app.py'.
+[ ] Confirm you see: "--- Server Ready ---".
+
+--- 3. NGROK TUNNEL (THE BRIDGE) ---
+[ ] Open a NEW Terminal/Command Prompt.
+[ ] RUN: ngrok http 8000
+[ ] COPY the 'Forwarding' link (https://...ngrok-free.app).
+    *Note: If you restart ngrok, the link CHANGES.*
+
+--- 4. FLUTTER FRONTEND (THE UI) ---
+[ ] Open 'chat_screen.dart'.
+[ ] UPDATE '_apiUrl' variable with the NEW ngrok link.
+    (Make sure it ends with /chat).
+[ ] CHECK Headers: Ensure this line exists in '_sendMessage':
+    'ngrok-skip-browser-warning': '69420',
+[ ] Run the app on your phone.
+[ ] Send ONE test message to ensure AI answers correctly.
+
+--- 5. DURING THE INTERVIEW ---
+[ ] Keep the Laptop OPEN and Terminals VISIBLE.
+[ ] If using a real phone: Ensure it has internet.
+[ ] If the app says "Network Error": 
+    1. Check if Ngrok is still running.
+    2. Check if the URL in Flutter matches the Ngrok terminal.
+    3. Check if your laptop went to sleep.
+
+--- 6. THE "PITCH" (WHAT TO SAY) ---
+"This is a RAG-based (Retrieval-Augmented Generation) system. 
+ - Flutter handles the UI/UX.
+ - Flask (Python) manages the logic.
+ - FAISS performs semantic search on 6,000+ verses.
+ - Groq Llama 3 generates the final answer based on context."
+=========================================

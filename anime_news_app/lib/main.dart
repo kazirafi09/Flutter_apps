@@ -1,6 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:anime_news_app/homepage.dart';
-
+import 'package:flutter/material.dart';
 void main() {
   runApp(const MyApp());
 }

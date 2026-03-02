@@ -25,7 +25,7 @@ class _ChatScreenState extends State<ChatScreen> {
   bool _showScrollToBottomBtn = false;
 
   // Use your local IP for physical devices or 10.0.2.2 for Android Emulator
-  final String _apiUrl = 'http://192.168.0.107:8000/chat';
+  final String _apiUrl = 'https://hyperintellectually-superblessed-natalee.ngrok-free.dev/chat';
 
   final AuthService _auth = AuthService();
 
@@ -96,18 +96,12 @@ class _ChatScreenState extends State<ChatScreen> {
     final userText = _controller.text.trim();
     _controller.clear();
 
-    if (_showScrollToBottomBtn) {
-      _scrollToBottom();
-    }
-
     setState(() {
       _messages.insert(0, ChatMessage(text: userText, isUser: true));
       _isLoading = true;
     });
 
     List<Map<String, String>> historyForApi = [_systemPrompt];
-
-    // Build history from oldest to newest
     for (var msg in _messages.reversed.skip(1)) {
       historyForApi.add({
         "role": msg.isUser ? "user" : "assistant",
@@ -118,45 +112,34 @@ class _ChatScreenState extends State<ChatScreen> {
     try {
       final response = await http.post(
         Uri.parse(_apiUrl),
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': '69420', // <--- THIS LINE IS THE FIX
+        },
         body: jsonEncode({
           'question': userText,
           'history': historyForApi,
         }),
       );
 
-      // ✅ CRITICAL: Check if user is still here after the network call
       if (!mounted) return;
-
       setState(() => _isLoading = false);
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
         await _animateBotResponse(data['answer']);
       } else {
-        setState(() {
-          _messages.insert(
-              0,
-              ChatMessage(
-                  text: "Server Error (${response.statusCode}). Please try again.",
-                  isUser: false));
-        });
+        setState(() => _messages.insert(0, ChatMessage(text: "Server Error: ${response.statusCode}", isUser: false)));
       }
     } catch (e) {
-      // ✅ CRITICAL: Check if user is still here after the error
       if (!mounted) return;
-      
+      debugPrint("FULL ERROR: $e"); // This will show you the exact error in the console
       setState(() {
         _isLoading = false;
-        _messages.insert(
-            0,
-            ChatMessage(
-                text: "Network Error. Please check your connection.",
-                isUser: false));
+        _messages.insert(0, ChatMessage(text: "Network Error. Check console for logs.", isUser: false));
       });
     }
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(

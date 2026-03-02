@@ -32,7 +32,7 @@ class SplashScreen extends StatelessWidget {
               shadows: [
                 Shadow(
                   blurRadius: 20,
-                  color: Colors.black.withOpacity(0.3),
+                  color: Colors.black45,
                   offset: const Offset(0, 10),
                 )
               ],
